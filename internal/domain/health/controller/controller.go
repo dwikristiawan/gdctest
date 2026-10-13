@@ -9,6 +9,7 @@ import (
 
 type HealthControllerInterface interface {
 	Liveness(c echo.Context) error
+	Readiness(c echo.Context) error
 }
 
 type HealthController struct {
@@ -21,5 +22,10 @@ func NewHealthController(svc service.HealthServiceInterface) HealthControllerInt
 
 func (h *HealthController) Liveness(c echo.Context) error {
 	data, err := h.svc.Liveness()
+	return pkgEcho.Respond(c, data, err)
+}
+
+func (h *HealthController) Readiness(c echo.Context) error {
+	data, err := h.svc.Readiness(c.Request().Context())
 	return pkgEcho.Respond(c, data, err)
 }

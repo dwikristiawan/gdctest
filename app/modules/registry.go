@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"gdctest/app/config"
+	"gdctest/pkg/database"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,15 +14,17 @@ import (
 type Context struct {
 	Echo     *echo.Group
 	DB       *sql.DB
+	Redis    *database.RedisClient
 	Config   *config.Config
 	services map[string]any
 	mu       sync.RWMutex
 }
 
-func NewContext(echoGroup *echo.Group, db *sql.DB, cfg *config.Config) *Context {
+func NewContext(echoGroup *echo.Group, db *sql.DB, redisClient *database.RedisClient, cfg *config.Config) *Context {
 	return &Context{
 		Echo:     echoGroup,
 		DB:       db,
+		Redis:    redisClient,
 		Config:   cfg,
 		services: make(map[string]any),
 	}

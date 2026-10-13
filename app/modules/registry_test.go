@@ -27,7 +27,7 @@ func TestModules_RegistrationAndBoot(t *testing.T) {
 	})
 
 	e := echo.New()
-	ctx := NewContext(e.Group(""), nil, nil)
+	ctx := NewContext(e.Group(""), nil, nil, nil)
 
 	if err := BootAll(ctx); err != nil {
 		t.Fatalf("BootAll failed: %v", err)

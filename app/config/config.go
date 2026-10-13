@@ -12,8 +12,9 @@ type Server struct {
 }
 
 type Config struct {
-	Server   Server          `envconfig:"SERVER"`
-	Database database.Config `envconfig:"DB"`
+	Server   Server               `envconfig:"SERVER"`
+	Database database.Config      `envconfig:"DB"`
+	Redis    database.RedisConfig `envconfig:"REDIS"`
 }
 
 func New(envPath string) (*Config, error) {

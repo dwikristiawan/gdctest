@@ -7,10 +7,13 @@ import (
 
 func init() {
 	Register(func(ctx *Context) error {
-		svc := service.NewHealthService()
+		svc := service.NewHealthService(ctx.Redis)
 		ctrl := controller.NewHealthController(svc)
 
-		ctx.Echo.GET("/liveness", ctrl.Liveness)
+		v1 := ctx.Echo.Group("/v1.0/healthcheck")
+		v1.GET("/liveness", ctrl.Liveness)
+		v1.GET("/readiness", ctrl.Readiness)
+
 		ctx.RegisterService("health", svc)
 		return nil
 	})
