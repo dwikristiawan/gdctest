@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"gdctest/pkg/database"
@@ -18,11 +19,15 @@ type HealthServiceInterface interface {
 }
 
 type HealthService struct {
+	db    *sql.DB
 	redis *database.RedisClient
 }
 
-func NewHealthService(redis *database.RedisClient) HealthServiceInterface {
-	return &HealthService{redis: redis}
+func NewHealthService(db *sql.DB, redis *database.RedisClient) HealthServiceInterface {
+	return &HealthService{
+		db:    db,
+		redis: redis,
+	}
 }
 
 func (s *HealthService) Liveness() (*HealthResponse, error) {
@@ -33,11 +38,28 @@ func (s *HealthService) Readiness(ctx context.Context) (*HealthResponse, error) 
 	checks := make(map[string]string)
 	status := "ok"
 
-	if s.redis != nil && s.redis.Client != nil {
-		pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	// Postgres check
+	if s.db != nil {
+		dbCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 		defer cancel()
 
-		if err := s.redis.Client.Ping(pingCtx).Err(); err != nil {
+		if err := s.db.PingContext(dbCtx); err != nil {
+			checks["postgres"] = "down: " + err.Error()
+			status = "degraded"
+		} else {
+			checks["postgres"] = "pong"
+		}
+	} else {
+		checks["postgres"] = "unconfigured"
+		status = "degraded"
+	}
+
+	// Redis check
+	if s.redis != nil && s.redis.Client != nil {
+		redisCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel()
+
+		if err := s.redis.Client.Ping(redisCtx).Err(); err != nil {
 			checks["redis"] = "down: " + err.Error()
 			status = "degraded"
 		} else {

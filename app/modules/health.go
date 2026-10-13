@@ -7,7 +7,7 @@ import (
 
 func init() {
 	Register(func(ctx *Context) error {
-		svc := service.NewHealthService(ctx.Redis)
+		svc := service.NewHealthService(ctx.DB, ctx.Redis)
 		ctrl := controller.NewHealthController(svc)
 
 		v1 := ctx.Echo.Group("/v1.0/healthcheck")
