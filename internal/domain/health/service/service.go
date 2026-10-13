@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"gdctest/pkg/database"
+	"github.com/redis/go-redis/v9"
 )
 
 type HealthResponse struct {
@@ -20,13 +20,13 @@ type HealthServiceInterface interface {
 
 type HealthService struct {
 	db    *sql.DB
-	redis *database.RedisClient
+	redis *redis.Client
 }
 
-func NewHealthService(db *sql.DB, redis *database.RedisClient) HealthServiceInterface {
+func NewHealthService(db *sql.DB, redisClient *redis.Client) HealthServiceInterface {
 	return &HealthService{
 		db:    db,
-		redis: redis,
+		redis: redisClient,
 	}
 }
 
@@ -55,11 +55,11 @@ func (s *HealthService) Readiness(ctx context.Context) (*HealthResponse, error) 
 	}
 
 	// Redis check
-	if s.redis != nil && s.redis.Client != nil {
+	if s.redis != nil {
 		redisCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 		defer cancel()
 
-		if err := s.redis.Client.Ping(redisCtx).Err(); err != nil {
+		if err := s.redis.Ping(redisCtx).Err(); err != nil {
 			checks["redis"] = "down: " + err.Error()
 			status = "degraded"
 		} else {

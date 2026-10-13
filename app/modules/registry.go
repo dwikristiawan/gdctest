@@ -1,30 +1,27 @@
 package modules
 
 import (
-	"database/sql"
 	"fmt"
 	"sync"
 
 	"gdctest/app/config"
-	"gdctest/pkg/database"
+	"gdctest/pkg/infra"
 
 	"github.com/labstack/echo/v4"
 )
 
 type Context struct {
 	Echo     *echo.Group
-	DB       *sql.DB
-	Redis    *database.RedisClient
+	Infra    *infra.Container
 	Config   *config.Config
 	services map[string]any
 	mu       sync.RWMutex
 }
 
-func NewContext(echoGroup *echo.Group, db *sql.DB, redisClient *database.RedisClient, cfg *config.Config) *Context {
+func NewContext(echoGroup *echo.Group, infraContainer *infra.Container, cfg *config.Config) *Context {
 	return &Context{
 		Echo:     echoGroup,
-		DB:       db,
-		Redis:    redisClient,
+		Infra:    infraContainer,
 		Config:   cfg,
 		services: make(map[string]any),
 	}

@@ -12,7 +12,7 @@ import (
 	"gdctest/app/config"
 	"gdctest/app/modules"
 	"gdctest/internal/middleware"
-	"gdctest/pkg/database"
+	"gdctest/pkg/infra"
 
 	"github.com/go-playground/validator/v10"
 	echoV4 "github.com/labstack/echo/v4"
@@ -24,16 +24,11 @@ type echoValidator struct{ v *validator.Validate }
 func (ev *echoValidator) Validate(i interface{}) error { return ev.v.Struct(i) }
 
 func Run(cfg *config.Config) {
-	// 1. Initialize infrastructure
-	pgDB, err := database.NewPostgresDB(&cfg.Database)
+	// 1. Initialize all registered infrastructure concurrently
+	infraContainer, err := infra.InitAll(context.Background())
 	if err != nil {
-		slog.Error("failed to initialize postgres database", "error", err)
+		slog.Error("infrastructure initialization failed, aborting server startup", "error", err)
 		os.Exit(1)
-	}
-
-	redisClient, err := database.NewRedisClient(&cfg.Redis)
-	if err != nil {
-		slog.Warn("failed to initialize redis client", "error", err)
 	}
 
 	// 2. Initialize Echo HTTP Server & Middlewares
@@ -47,7 +42,7 @@ func Run(cfg *config.Config) {
 	e.Use(middleware.CORS())
 
 	// 3. Boot all modules registered in app/modules
-	modCtx := modules.NewContext(e.Group("/api"), pgDB.DB, redisClient, cfg)
+	modCtx := modules.NewContext(e.Group("/api"), infraContainer, cfg)
 	if err := modules.BootAll(modCtx); err != nil {
 		slog.Error("failed to boot modules", "error", err)
 		os.Exit(1)
@@ -73,13 +68,8 @@ func Run(cfg *config.Config) {
 	if err := e.Shutdown(ctx); err != nil {
 		slog.Error("echo shutdown error", "error", err)
 	}
-	if err := pgDB.Shutdown(ctx); err != nil {
-		slog.Error("database shutdown error", "error", err)
-	}
-	if redisClient != nil {
-		if err := redisClient.Shutdown(ctx); err != nil {
-			slog.Error("redis shutdown error", "error", err)
-		}
+	if err := infraContainer.ShutdownAll(ctx); err != nil {
+		slog.Error("infra shutdown error", "error", err)
 	}
 	slog.Info("server stopped gracefully")
 }

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"gdctest/pkg/database"
-
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -12,9 +10,7 @@ type Server struct {
 }
 
 type Config struct {
-	Server   Server               `envconfig:"SERVER"`
-	Database database.Config      `envconfig:"DB"`
-	Redis    database.RedisConfig `envconfig:"REDIS"`
+	Server Server `envconfig:"SERVER"`
 }
 
 func New(envPath string) (*Config, error) {
