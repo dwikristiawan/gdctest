@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"gdctest/internal/domain/task/model"
 	"gdctest/pkg/apperror"
+	"gdctest/pkg/logger"
 )
 
 func (s *TaskService) AssignTask(ctx context.Context, currentUserID string, req AssignTaskRequest) error {
@@ -96,6 +96,10 @@ func (s *TaskService) AssignTask(ctx context.Context, currentUserID string, req 
 		return apperror.Internal("failed to assign collaborator", err)
 	}
 
-	slog.Info("notification sent: task assigned", "task_id", req.TaskID, "assignee", req.UserID, "changed_by", currentUserID)
+	logger.FromContext(ctx).Info("notification sent: task assigned",
+		"task_id", req.TaskID,
+		"assignee", req.UserID,
+		"changed_by", currentUserID,
+	)
 	return nil
 }
