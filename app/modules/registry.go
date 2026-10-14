@@ -11,19 +11,25 @@ import (
 )
 
 type Context struct {
-	Echo     *echo.Group
-	Infra    *infra.Container
-	Config   *config.Config
-	services map[string]any
-	mu       sync.RWMutex
+	Echo           *echo.Group
+	Infra          *infra.Container
+	Config         *config.Config
+	AuthMiddleware echo.MiddlewareFunc
+	services       map[string]any
+	mu             sync.RWMutex
 }
 
-func NewContext(echoGroup *echo.Group, infraContainer *infra.Container, cfg *config.Config) *Context {
+func NewContext(echoGroup *echo.Group, infraContainer *infra.Container, cfg *config.Config, authMw ...echo.MiddlewareFunc) *Context {
+	var mw echo.MiddlewareFunc
+	if len(authMw) > 0 {
+		mw = authMw[0]
+	}
 	return &Context{
-		Echo:     echoGroup,
-		Infra:    infraContainer,
-		Config:   cfg,
-		services: make(map[string]any),
+		Echo:           echoGroup,
+		Infra:          infraContainer,
+		Config:         cfg,
+		AuthMiddleware: mw,
+		services:       make(map[string]any),
 	}
 }
 

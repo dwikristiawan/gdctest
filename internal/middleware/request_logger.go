@@ -95,7 +95,7 @@ func RequestLogger() echo.MiddlewareFunc {
 			reqBodyFormatted := logger.FormatPayload(reqBody, reqContentType)
 			resBodyFormatted := logger.FormatPayload(resBuf.Bytes(), resContentType)
 
-			logger.LogAttrsDirect(req.Context(), slog.LevelInfo, "client request",
+			logAttrs := []slog.Attr{
 				slog.String("url", req.URL.Path),
 				slog.String("method", req.Method),
 				slog.String("route", c.Path()),
@@ -111,7 +111,20 @@ func RequestLogger() echo.MiddlewareFunc {
 					slog.Any("headers", c.Response().Header()),
 					slog.Any("body", resBodyFormatted),
 				),
-			)
+			}
+
+			if realErr := c.Get("real_error"); realErr != nil {
+				logAttrs = append(logAttrs, slog.Any("real_error", realErr))
+			}
+
+			level := slog.LevelInfo
+			if c.Response().Status >= http.StatusInternalServerError {
+				level = slog.LevelError
+			} else if c.Response().Status >= http.StatusBadRequest {
+				level = slog.LevelWarn
+			}
+
+			logger.LogAttrsDirect(req.Context(), level, "client request", logAttrs...)
 
 			return err
 		}

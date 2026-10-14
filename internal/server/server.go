@@ -41,8 +41,16 @@ func Run(cfg *config.Config) {
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.CORS())
 
-	// 3. Boot all modules registered in app/modules
-	modCtx := modules.NewContext(e.Group("/api"), infraContainer, cfg)
+	// 3. Initialize Auth Middleware once for all modules
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "super-secret-key-12345"
+	}
+	rdb, _ := infra.GetRedis(infraContainer)
+	authMw := middleware.Auth(jwtSecret, rdb)
+
+	// 4. Boot all modules registered in app/modules
+	modCtx := modules.NewContext(e.Group("/api"), infraContainer, cfg, authMw)
 	if err := modules.BootAll(modCtx); err != nil {
 		slog.Error("failed to boot modules", "error", err)
 		os.Exit(1)
