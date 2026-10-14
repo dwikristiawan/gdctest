@@ -1,0 +1,601 @@
+{
+	"info": {
+		"_postman_id": "gdctest-api-v1",
+		"name": "GDC Test - API Collection",
+		"description": "Postman Collection untuk testing Auth Flow, Team Management, dan Task Management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Request Register (Send Link)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"user@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"register"
+					]
+				},
+				"description": "Request link pendaftaran ke email. Cek inbox di Mailpit http://localhost:8025"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Complete Register (Set Password)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"PASTE_TOKEN_DARI_EMAIL_MAILPIT\",\n    \"username\": \"userkeren\",\n    \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/set-password",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"set-password"
+					]
+				},
+				"description": "Selesaikan registrasi dengan memasukkan token dari email Mailpit."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"if (jsonData.data && jsonData.data.token) {",
+							"    pm.environment.set(\"jwt_token\", jsonData.data.token);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Login dengan email dan password. Otomatis menyimpan jwt_token ke environment."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Logout (Blacklist JWT)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"logout"
+					]
+				},
+				"description": "Logout dan blacklist JWT di Redis."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Request Forgot Password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"user@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/forgot-password",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"forgot-password"
+					]
+				},
+				"description": "Kirim email reset password (valid 15 menit). Cek inbox di Mailpit http://localhost:8025"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Reset Password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"PASTE_TOKEN_DARI_EMAIL_MAILPIT\",\n    \"password\": \"newpassword123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/auth/reset-password",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"auth",
+						"reset-password"
+					]
+				},
+				"description": "Reset password dan bersihkan seluruh cache sesi email."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Create Team",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Engineering Core\",\n    \"description\": \"Backend and platform team\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams"
+					]
+				},
+				"description": "Membuat tim baru. Creator otomatis menjadi Owner dan Admin member."
+			},
+			"response": []
+		},
+		{
+			"name": "8. List Teams",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams"
+					]
+				},
+				"description": "Mendapatkan daftar tim di mana user aktif sebagai owner atau member."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Add Team Member",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"USER_UUID_TARGET\",\n    \"role_type\": 1\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams/{{team_id}}/members",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams",
+						"{{team_id}}",
+						"members"
+					]
+				},
+				"description": "Menambahkan anggota baru atau reaktivasi soft-deleted member ke tim (0: Admin, 1: Member)."
+			},
+			"response": []
+		},
+		{
+			"name": "10. List Team Members",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams/{{team_id}}/members",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams",
+						"{{team_id}}",
+						"members"
+					]
+				},
+				"description": "Mendapatkan daftar anggota aktif tim (deleted_at IS NULL)."
+			},
+			"response": []
+		},
+		{
+			"name": "11. Remove Team Member (Soft Delete)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams/{{team_id}}/members/{{user_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams",
+						"{{team_id}}",
+						"members",
+						"{{user_id}}"
+					]
+				},
+				"description": "Soft delete anggota tim (set deleted_at). Owner tidak dapat dihapus."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Delete Team",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/teams/{{team_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"teams",
+						"{{team_id}}"
+					]
+				},
+				"description": "Menghapus tim (hanya Owner tim)."
+			},
+			"response": []
+		},
+		{
+			"name": "13. Create Task",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Idempotency-Key",
+						"value": "{{$guid}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"team_id\": \"{{team_id}}\",\n    \"title\": \"Implement Authentication Middleware\",\n    \"description\": \"Verify JWT with IP binding and rate limiting\",\n    \"status\": 0\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks"
+					]
+				},
+				"description": "Membuat task baru dalam suatu team (hanya anggota aktif tim yang dapat membuat). Mendukung header Idempotency-Key (UUID)."
+			},
+			"response": []
+		},
+		{
+			"name": "14. List Tasks (Filter & Pagination)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks?team_id={{team_id}}&status=0&title=Auth&page=1&limit=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks"
+					],
+					"query": [
+						{
+							"key": "team_id",
+							"value": "{{team_id}}"
+						},
+						{
+							"key": "status",
+							"value": "0"
+						},
+						{
+							"key": "title",
+							"value": "Auth"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Mendapatkan daftar task berdasarkan query parameters: team_id, status, title/search, serta pagination page & limit."
+			},
+			"response": []
+		},
+		{
+			"name": "15. Get Task Detail",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks/{{task_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks",
+						"{{task_id}}"
+					]
+				},
+				"description": "Mendapatkan detail task beserta daftar collaborator."
+			},
+			"response": []
+		},
+		{
+			"name": "16. Update Task",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Updated Task Title\",\n    \"description\": \"Updated description\",\n    \"status\": 2\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks/{{task_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks",
+						"{{task_id}}"
+					]
+				},
+				"description": "Mengupdate title, description, atau status task."
+			},
+			"response": []
+		},
+		{
+			"name": "17. Assign Task",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"USER_UUID_TARGET\",\n    \"role_type\": 0\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks/{{task_id}}/assign",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks",
+						"{{task_id}}",
+						"assign"
+					]
+				},
+				"description": "Menugaskan user sebagai collaborator task (0: Assignee, 1: Reviewer, 2: Watcher). Target wajib anggota aktif tim."
+			},
+			"response": []
+		},
+		{
+			"name": "18. Delete Task",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1.0/tasks/{{task_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1.0",
+						"tasks",
+						"{{task_id}}"
+					]
+				},
+				"description": "Menghapus task (pembuat task atau Owner/Admin tim)."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "jwt_token",
+			"value": ""
+		},
+		{
+			"key": "team_id",
+			"value": ""
+		},
+		{
+			"key": "task_id",
+			"value": ""
+		},
+		{
+			"key": "user_id",
+			"value": ""
+		}
+	]
+}
