@@ -2,6 +2,8 @@
 
 Layanan RESTful API backend berbasis Go (Golang) yang dibangun dengan arsitektur modular (*Clean Architecture*), mendukung autentikasi JWT, manajemen tim (*Team Management*), task management dengan idempotency berbasis hash payload dan Redis lock, serta integritas transaksi database atomik untuk delegasi tugas (*task assignment*) beserta pencatatan audit log.
 
+> **Postman Collection**: File Postman Collection v2.1.0 lengkap tersedia di [`./docs/postman_collection.json`](./docs/postman_collection.json) dan dapat langsung di-import ke Postman untuk menguji seluruh 19 endpoint API.
+
 ---
 
 ## 1. How to Run
@@ -279,12 +281,12 @@ sequenceDiagram
 ## 5. Dokumentasi API Detail & Postman Import
 
 Postman Collection v2.1.0 telah disediakan dan dapat langsung diimpor ke aplikasi Postman:
-- **File Postman Collection**: [`docs/postman_auth_collection.json`](file:///home/dwikky/GolandProjects/gdctest/docs/postman_auth_collection.json)
+- **File Postman Collection**: [`./docs/postman_collection.json`](./docs/postman_collection.json)
 
 ### Cara Import ke Postman:
 1. Buka aplikasi **Postman**.
 2. Klik tombol **Import** (di pojok kiri atas).
-3. Pilih file [`docs/postman_auth_collection.json`](file:///home/dwikky/GolandProjects/gdctest/docs/postman_auth_collection.json).
+3. Pilih file [`./docs/postman_collection.json`](./docs/postman_collection.json).
 4. Atur Environment Variables di Postman:
    - `base_url`: `http://localhost:8080`
    - `jwt_token`: *(otomatis terisi saat menjalankan request Login)*
