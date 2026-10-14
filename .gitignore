@@ -3,3 +3,8 @@ session.db*
 bin/
 *.test
 .idea/
+session.db
+coverage.out
+audit_checklist_requirement.md
+docs/implementation_plan*
+scripts/

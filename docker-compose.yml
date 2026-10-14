@@ -20,11 +20,18 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_FROM: no-reply@gdctest.local
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key-12345}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailpit:
+        condition: service_started
 
   postgres:
     image: postgres:16-alpine
@@ -59,6 +66,17 @@ services:
       timeout: 3s
       retries: 5
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: gdctest-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+    volumes:
+      - mailpitdata:/data
+
 volumes:
   pgdata:
   redisdata:
+  mailpitdata:
