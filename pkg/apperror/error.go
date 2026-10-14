@@ -60,3 +60,7 @@ func Unauthorized(detail string, err ...error) *Error {
 func Internal(detail string, err ...error) *Error {
 	return New(http.StatusInternalServerError, detail, err...)
 }
+
+func Forbidden(detail string, err ...error) *Error {
+	return New(http.StatusForbidden, detail, err...)
+}
